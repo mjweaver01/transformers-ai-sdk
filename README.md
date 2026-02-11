@@ -20,11 +20,11 @@ Components to check out for the implementation:
 
 ## Tech Stack
 
-- [Next.js 15](https://nextjs.org)
+- [Next.js 16](https://nextjs.org)
 - [Shadcn/ui](https://ui.shadcn.com) for modern, accessible components
 - [Zustand](https://github.com/pmndrs/zustand) for lightweight state management
 - **AI Integration**:
-  - [Vercel AI SDK](https://ai-sdk.dev/) for chat interface and streaming
+  - [Vercel AI SDK v6](https://ai-sdk.dev/) for chat interface and streaming
   - [@browser-ai/transformers-js](https://github.com/jakobhoeg/browser-ai) model provider that works as a model provider for Transformers.js to integreate with Vercel AI SDK.
 
 ## Getting Started
@@ -46,4 +46,4 @@ Components to check out for the implementation:
 
 ## Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/huggingface/transformers.js-examples/tree/main/next-vercel-ai-sdk)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mjweaver01/transformers-ai-sdk)
