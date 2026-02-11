@@ -19,6 +19,32 @@ import {
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
 import { CodeBlock } from "./code-block";
+import MermaidDiagram from './mermaid-diagram';
+import GenerativeUI from './gen-ui';
+import { Response } from "./response";
+
+const hasCodeProps = (
+  children: unknown
+): children is { props: { className?: string; children: string } } => {
+  return !!(
+    children &&
+    typeof children === 'object' &&
+    'props' in children &&
+    children.props
+  );
+};
+
+/** Detect if a string is likely JSON (object/array) so we can show it as code instead of markdown */
+function looksLikeJson(str: string): boolean {
+  const trimmed = str.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return false;
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
+  }
+} 
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
@@ -40,7 +66,6 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
   const labels: Record<ToolUIPart["state"], string> = {
     "input-streaming": "Pending",
     "input-available": "Running",
-    // @ts-expect-error state only available in AI SDK v6
     "approval-requested": "Awaiting Approval",
     "approval-responded": "Responded",
     "output-available": "Completed",
@@ -51,7 +76,6 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
   const icons: Record<ToolUIPart["state"], ReactNode> = {
     "input-streaming": <CircleIcon className="size-4" />,
     "input-available": <ClockIcon className="size-4 animate-pulse" />,
-    // @ts-expect-error state only available in AI SDK v6
     "approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
     "approval-responded": <CheckCircleIcon className="size-4 text-blue-600" />,
     "output-available": <CheckCircleIcon className="size-4 text-green-600" />,
@@ -136,12 +160,34 @@ export const ToolOutput = ({
 
   let Output = <div>{output as ReactNode}</div>;
 
+  const { children } = props;
+  const language = className ? className.replace('language-', '') : '';
+  const content = hasCodeProps(children)
+    ? children.props.children
+    : String(children || '');
+
+    if (language === 'mermaid') {
+      return <MermaidDiagram chart={content} />;
+    }
+  
+    if (language === 'jsx') {
+      return <GenerativeUI jsxString={content} isLoading={false} />;
+    }
+
   if (typeof output === "object" && !isValidElement(output)) {
     Output = (
       <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
     );
   } else if (typeof output === "string") {
-    Output = <CodeBlock code={output} language="json" />;
+    if (looksLikeJson(output)) {
+      Output = <CodeBlock code={output} language="json" />;
+    } else {
+      Output = (
+        <Response className="prose prose-sm dark:prose-invert max-w-none" parseIncompleteMarkdown={false}>
+          {output}
+        </Response>
+      );
+    }
   }
 
   return (

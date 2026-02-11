@@ -5,7 +5,6 @@ import {
   convertToModelMessages,
   ChatRequestOptions,
   createUIMessageStream,
-  tool,
   stepCountIs,
   wrapLanguageModel,
   extractReasoningMiddleware,
@@ -15,18 +14,16 @@ import {
   TransformersUIMessage,
 } from "@browser-ai/transformers-js";
 import { useModelStore } from "../store/store";
-import { createTools } from "./tools/tools";
+import { createDefaultSystemPrompt } from "./prompts";
+import { tools, toolsMetadata } from "./tools/tools";
 
 /**
  * Client-side chat transport AI SDK implementation that handles AI model communication
  * with in-browser AI capabilities.
  */
 export class TransformersChatTransport implements ChatTransport<TransformersUIMessage> {
-  private tools: ReturnType<typeof createTools>;
+  private tools = tools;
 
-  constructor() {
-    this.tools = createTools();
-  }
 
   private async getModel(): Promise<TransformersJSLanguageModel> {
     return useModelStore.getState().getModelInstance();
@@ -54,10 +51,10 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
         // Only track progress if model needs downloading
         if (availability !== "available") {
           await model.createSessionWithProgress(
-            (progress: { progress: number }) => {
-              const percent = Math.round(progress.progress * 100);
+            (progress: number) => {
+              const percent = Math.round(progress * 100);
 
-              if (progress.progress >= 1) {
+              if (progress >= 1) {
                 if (downloadProgressId) {
                   writer.write({
                     type: "data-modelDownloadProgress",
@@ -98,6 +95,7 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
               tagName: "think",
             }),
           }),
+          system: createDefaultSystemPrompt(toolsMetadata),
           tools: this.tools,
           stopWhen: stepCountIs(5),
           messages: prompt,

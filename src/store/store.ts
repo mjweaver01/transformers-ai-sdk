@@ -1,9 +1,9 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   TransformersJSLanguageModel,
   transformersJS,
-} from "@browser-ai/transformers-js";
-import { MODELS } from "../app/models";
+} from '@browser-ai/transformers-js';
+import { TRANSFORMERS_MODELS } from '../app/models';
 
 interface ModelStore {
   selectedModel: string;
@@ -14,7 +14,7 @@ interface ModelStore {
 }
 
 export const useModelStore = create<ModelStore>((set, get) => ({
-  selectedModel: MODELS[0].id,
+  selectedModel: TRANSFORMERS_MODELS[0].id,
   modelInstance: null,
 
   setSelectedModel: (modelId: string) => {
@@ -33,12 +33,12 @@ export const useModelStore = create<ModelStore>((set, get) => ({
     }
 
     // Find the selected model config
-    const modelConfig = MODELS.find(
-      (model) => model.id === state.selectedModel,
+    const modelConfig = TRANSFORMERS_MODELS.find(
+      model => model.id === state.selectedModel
     );
     if (!modelConfig) {
       throw new Error(
-        `Model configuration not found for: ${state.selectedModel}`,
+        `Model configuration not found for: ${state.selectedModel}`
       );
     }
 
@@ -47,8 +47,8 @@ export const useModelStore = create<ModelStore>((set, get) => ({
     // Only use worker if the model supports it
     const workerConfig = modelConfig.supportsWorker
       ? {
-          worker: new Worker(new URL("../app/worker.ts", import.meta.url), {
-            type: "module",
+          worker: new Worker(new URL('../app/worker.ts', import.meta.url), {
+            type: 'module',
           }),
         }
       : {};

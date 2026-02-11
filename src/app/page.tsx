@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@/components/ai-elements/conversation";
-import { Message, MessageContent } from "@/components/ai-elements/message";
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
 import {
   PromptInput,
   PromptInputButton,
@@ -18,33 +18,33 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-} from "@/components/ai-elements/prompt-input";
-import { useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { Response } from "@/components/ai-elements/response";
+} from '@/components/ai-elements/prompt-input';
+import { useRef, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { Response } from '@/components/ai-elements/response';
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
-import { Loader } from "@/components/ai-elements/loader";
-import { MODELS } from "./models";
-import { TransformersUIMessage } from "@browser-ai/transformers-js";
-import { TransformersChatTransport } from "./chat-transport";
-import { useModelStore } from "../store/store";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { CheckIcon, Copy, PlusIcon, RefreshCcw, X, XIcon } from "lucide-react";
-import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
-import Image from "next/image";
-import { Action } from "@/components/ai-elements/actions";
+} from '@/components/ai-elements/reasoning';
+import { Loader } from '@/components/ai-elements/loader';
+import { TRANSFORMERS_MODELS } from './models';
+import { TransformersUIMessage } from '@browser-ai/transformers-js';
+import { TransformersChatTransport } from './chat-transport';
+import { useModelStore } from '../store/store';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { CheckIcon, Copy, PlusIcon, RefreshCcw, X, XIcon } from 'lucide-react';
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
+import Image from 'next/image';
+import { Action } from '@/components/ai-elements/actions';
 import {
   Tool,
   ToolContent,
   ToolHeader,
   ToolInput,
   ToolOutput,
-} from "@/components/ai-elements/tool";
+} from '@/components/ai-elements/tool';
 import {
   Confirmation,
   ConfirmationTitle,
@@ -53,18 +53,26 @@ import {
   ConfirmationRejected,
   ConfirmationActions,
   ConfirmationAction,
-} from "@/components/ai-elements/confirmation";
-import { lastAssistantMessageIsCompleteWithApprovalResponses } from "ai";
+} from '@/components/ai-elements/confirmation';
+import { lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
 
 const suggestions = [
-  "Where am I located?",
-  "What time is it?",
-  "Solve a math problem",
-  "Generate a random number",
+  'What are the latest trends in AI?',
+  'How does machine learning work?',
+  'Explain quantum computing',
+  'Best practices for React development',
+  'Tell me about TypeScript benefits',
+  'How to optimize database queries?',
+  'What is the difference between SQL and NoSQL?',
+  'Explain cloud computing basics',
+  'What are the current web development trends?',
+  'How to design RESTful APIs?',
+  'What are the latest news today?',
+  'What is the weather today in Columbus, OH?',
 ];
 
 const ChatBotDemo = () => {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const { selectedModel, setSelectedModel } = useModelStore();
 
   const {
@@ -82,11 +90,11 @@ const ChatBotDemo = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() && status === "ready") {
+    if (input.trim() && status === 'ready') {
       sendMessage({
         text: input,
       });
-      setInput("");
+      setInput('');
     }
   };
 
@@ -96,9 +104,9 @@ const ChatBotDemo = () => {
 
   const copyMessageToClipboard = (message: any) => {
     const textContent = message.parts
-      .filter((part: any) => part.type === "text")
+      .filter((part: any) => part.type === 'text')
       .map((part: any) => part.text)
-      .join("\n");
+      .join('\n');
 
     navigator.clipboard.writeText(textContent);
   };
@@ -110,7 +118,7 @@ const ChatBotDemo = () => {
           <div className="flex h-full flex-col items-center justify-center text-center">
             <Image alt="logo" width={350} height={120} src="huggingface.svg" />
             <p className="text-sm max-w-xl">
-              In-browser, local chat application powered by {""}
+              In-browser, local chat application powered by {''}
               <a
                 className="text-blue-400 underline"
                 href="https://github.com/huggingface/transformers.js"
@@ -119,7 +127,7 @@ const ChatBotDemo = () => {
               >
                 Transformers.js
               </a>
-              , {""}
+              , {''}
               <a
                 className="text-blue-400 underline"
                 href="https://github.com/jakobhoeg/browser-ai"
@@ -127,8 +135,8 @@ const ChatBotDemo = () => {
                 rel="noopener noreferrer"
               >
                 @browser-ai/transformers-js
-              </a>{" "}
-              and {""}
+              </a>{' '}
+              and {''}
               <a
                 className="text-blue-400 underline"
                 href="https://ai-sdk.dev/"
@@ -151,11 +159,11 @@ const ChatBotDemo = () => {
                     <MessageContent>
                       {message.parts.map((part, i) => {
                         switch (part.type) {
-                          case "data-modelDownloadProgress":
+                          case 'data-modelDownloadProgress':
                             // Only show if message is not empty (hiding completed/cleared progress)
                             if (!part.data.message) return null;
                             // Don't show the entire div when actively streaming
-                            if (status === "ready") return null;
+                            if (status === 'ready') return null;
                             return (
                               <div key={i}>
                                 <div className="flex items-center justify-between mb-2">
@@ -164,39 +172,39 @@ const ChatBotDemo = () => {
                                     {part.data.message}
                                   </span>
                                 </div>
-                                {part.data.status === "downloading" &&
+                                {part.data.status === 'downloading' &&
                                   part.data.progress !== undefined && (
                                     <Progress value={part.data.progress} />
                                   )}
                               </div>
                             );
-                          case "file":
-                            if (part.mediaType?.startsWith("image/"))
+                          case 'file':
+                            if (part.mediaType?.startsWith('image/'))
                               return (
                                 <div key={i} className="mt-2">
                                   <Image
-                                    src={part.url || "/placeholder.svg"}
+                                    src={part.url || '/placeholder.svg'}
                                     width={300}
                                     height={300}
-                                    alt={part.filename || "Uploaded image"}
+                                    alt={part.filename || 'Uploaded image'}
                                     className="object-contain max-w-sm rounded-lg border"
                                   />
                                 </div>
                               );
                             return null;
-                          case "text":
+                          case 'text':
                             return (
                               <Response key={`${message.id}-${i}`}>
                                 {part.text}
                               </Response>
                             );
-                          case "reasoning":
+                          case 'reasoning':
                             return (
                               <Reasoning
                                 key={`${message.id}-${i}`}
                                 className="w-full"
                                 isStreaming={
-                                  status === "streaming" &&
+                                  status === 'streaming' &&
                                   messageIndex === messages.length - 1
                                 }
                               >
@@ -206,17 +214,17 @@ const ChatBotDemo = () => {
                             );
                           default:
                             // Handle tool parts
-                            if (part.type.startsWith("tool-")) {
-                              if (!("state" in part)) return null;
+                            if (part.type.startsWith('tool-')) {
+                              if (!('state' in part)) return null;
 
                               // Handle tool states that need confirmation UI
                               const needsConfirmation =
-                                part.state === "approval-requested" ||
-                                part.state === "approval-responded" ||
-                                part.state === "output-denied";
+                                part.state === 'approval-requested' ||
+                                part.state === 'approval-responded' ||
+                                part.state === 'output-denied';
 
-                              if (needsConfirmation && "approval" in part) {
-                                const toolName = part.type.replace("tool-", "");
+                              if (needsConfirmation && 'approval' in part) {
+                                const toolName = part.type.replace('tool-', '');
                                 return (
                                   <Tool key={i}>
                                     <ToolHeader
@@ -224,7 +232,7 @@ const ChatBotDemo = () => {
                                       state={part.state}
                                     />
                                     <ToolContent>
-                                      {"input" in part &&
+                                      {'input' in part &&
                                         part.input !== undefined && (
                                           <ToolInput input={part.input} />
                                         )}
@@ -253,7 +261,7 @@ const ChatBotDemo = () => {
                                                 id: part.approval!.id,
                                                 approved: false,
                                                 reason:
-                                                  "User denied tool execution",
+                                                  'User denied tool execution',
                                               })
                                             }
                                             variant="outline"
@@ -278,14 +286,14 @@ const ChatBotDemo = () => {
                                 );
                               }
 
-                              const toolState = part.state || "input-streaming";
+                              const toolState = part.state || 'input-streaming';
 
                               const formatOutput = (
-                                output: unknown,
+                                output: unknown
                               ): React.ReactNode => {
                                 if (output === undefined || output === null)
                                   return undefined;
-                                if (typeof output === "string") return output;
+                                if (typeof output === 'string') return output;
                                 return (
                                   <pre className="text-xs overflow-auto">
                                     {JSON.stringify(output, null, 2)}
@@ -300,20 +308,20 @@ const ChatBotDemo = () => {
                                     state={toolState as any}
                                   />
                                   <ToolContent>
-                                    {"input" in part &&
+                                    {'input' in part &&
                                       part.input !== undefined && (
                                         <ToolInput input={part.input} />
                                       )}
-                                    {("output" in part ||
-                                      "errorText" in part) && (
+                                    {('output' in part ||
+                                      'errorText' in part) && (
                                       <ToolOutput
                                         output={
-                                          "output" in part && part.output
+                                          'output' in part && part.output
                                             ? formatOutput(part.output)
                                             : undefined
                                         }
                                         errorText={
-                                          "errorText" in part && part.errorText
+                                          'errorText' in part && part.errorText
                                             ? String(part.errorText)
                                             : undefined
                                         }
@@ -326,10 +334,10 @@ const ChatBotDemo = () => {
                             return null;
                         }
                       })}
-                      {(message.role === "assistant" ||
-                        message.role === "system") &&
+                      {(message.role === 'assistant' ||
+                        message.role === 'system') &&
                         messageIndex === messages.length - 1 &&
-                        status === "ready" && (
+                        status === 'ready' && (
                           <div className="flex gap-1 mt-2">
                             <Action
                               type="button"
@@ -357,14 +365,14 @@ const ChatBotDemo = () => {
               ))}
               {/* Loading state when tool approval was sent and we're waiting for response */}
               {messages.length > 0 &&
-                (messages[messages.length - 1].role === "assistant" ||
-                  messages[messages.length - 1].role === "system") &&
-                status === "submitted" &&
+                (messages[messages.length - 1].role === 'assistant' ||
+                  messages[messages.length - 1].role === 'system') &&
+                status === 'submitted' &&
                 messages[messages.length - 1].parts.some(
-                  (part) =>
-                    part.type.startsWith("tool-") &&
-                    "state" in part &&
-                    part.state === "approval-responded",
+                  part =>
+                    part.type.startsWith('tool-') &&
+                    'state' in part &&
+                    part.state === 'approval-responded'
                 ) && (
                   <div className="flex gap-1 items-center text-gray-500 mt-2">
                     <Loader />
@@ -373,17 +381,17 @@ const ChatBotDemo = () => {
                 )}
 
               {/* Loading state - only show as separate message if not after tool approval */}
-              {status === "submitted" &&
+              {status === 'submitted' &&
                 !messages.some(
                   (m, index) =>
                     index === messages.length - 1 &&
-                    (m.role === "assistant" || m.role === "system") &&
+                    (m.role === 'assistant' || m.role === 'system') &&
                     m.parts.some(
-                      (part) =>
-                        part.type.startsWith("tool-") &&
-                        "state" in part &&
-                        part.state === "approval-responded",
-                    ),
+                      part =>
+                        part.type.startsWith('tool-') &&
+                        'state' in part &&
+                        part.state === 'approval-responded'
+                    )
                 ) && (
                   <Message from="assistant">
                     <MessageContent>
@@ -402,7 +410,7 @@ const ChatBotDemo = () => {
         <div className="shrink-0">
           {messages.length === 0 && (
             <Suggestions>
-              {suggestions.map((suggestion) => (
+              {suggestions.map(suggestion => (
                 <Suggestion
                   key={suggestion}
                   onClick={handleSuggestionClick}
@@ -413,13 +421,13 @@ const ChatBotDemo = () => {
           )}
           <PromptInput onSubmit={handleSubmit} className="mt-4">
             <PromptInputTextarea
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               value={input}
             />
             <PromptInputToolbar>
               <PromptInputTools>
                 <PromptInputModelSelect
-                  onValueChange={(value) => {
+                  onValueChange={value => {
                     setSelectedModel(value);
                   }}
                   value={selectedModel}
@@ -428,7 +436,7 @@ const ChatBotDemo = () => {
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
                   <PromptInputModelSelectContent>
-                    {MODELS.map((model) => (
+                    {TRANSFORMERS_MODELS.map(model => (
                       <PromptInputModelSelectItem
                         key={model.id}
                         value={model.id}
@@ -440,10 +448,10 @@ const ChatBotDemo = () => {
                 </PromptInputModelSelect>
               </PromptInputTools>
               <PromptInputSubmit
-                disabled={status === "ready" && !input.trim()}
+                disabled={status === 'ready' && !input.trim()}
                 status={status}
                 onClick={
-                  status === "submitted" || status === "streaming"
+                  status === 'submitted' || status === 'streaming'
                     ? stop
                     : undefined
                 }
