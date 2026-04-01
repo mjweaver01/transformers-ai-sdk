@@ -38,6 +38,13 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     dtype: 'fp16',
     supportsWorker: false,
   },
+  {
+    id: 'onnx-community/gpt-oss-20b-ONNX',
+    name: 'GPT-OSS 20B',
+    device: 'webgpu',
+    dtype: 'q4f16',
+    supportsWorker: true,
+  },
 ];
 
 const checkApiKey = (key: string | undefined, provider: string): boolean => {
