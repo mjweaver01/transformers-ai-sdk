@@ -19,7 +19,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { Response } from '@/components/ai-elements/response';
 import {
@@ -34,7 +34,15 @@ import { TransformersChatTransport } from './chat-transport';
 import { useModelStore } from '../store/store';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { CheckIcon, Copy, PlusIcon, RefreshCcw, X, XIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  Copy,
+  Download,
+  Loader2,
+  PlusIcon,
+  RefreshCcw,
+  XIcon,
+} from 'lucide-react';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import Image from 'next/image';
 import { Action } from '@/components/ai-elements/actions';
@@ -73,11 +81,27 @@ const suggestions = [
 
 const ChatBotDemo = () => {
   const [input, setInput] = useState('');
-  const { selectedModel, setSelectedModel } = useModelStore();
+  const {
+    selectedModel,
+    setSelectedModel,
+    getModelInstance,
+    clearModelInstance,
+    isModelDownloaded,
+    markModelDownloaded,
+  } = useModelStore();
+  const [isPreloading, setIsPreloading] = useState(false);
+  const [preloadProgress, setPreloadProgress] = useState<number | null>(null);
+  const [preloadError, setPreloadError] = useState<string | null>(null);
+  const [isModelPreloaded, setIsModelPreloaded] = useState(false);
+  const selectedModelConfig = TRANSFORMERS_MODELS.find(
+    model => model.id === selectedModel
+  );
+  const preloadDisabledByModel = selectedModelConfig?.allowPreload === false;
 
   const {
     messages,
     sendMessage,
+    setMessages,
     status,
     stop,
     regenerate,
@@ -102,6 +126,53 @@ const ChatBotDemo = () => {
     sendMessage({ text: suggestion });
   };
 
+  const handleNewConversation = () => {
+    setMessages([]);
+    setInput('');
+    setPreloadError(null);
+  };
+
+  useEffect(() => {
+    setIsPreloading(false);
+    setPreloadProgress(null);
+    setPreloadError(null);
+    setIsModelPreloaded(isModelDownloaded(selectedModel));
+  }, [selectedModel, isModelDownloaded]);
+
+  const handlePreloadModel = async () => {
+    if (isPreloading || preloadDisabledByModel) return;
+
+    setIsPreloading(true);
+    setPreloadError(null);
+    setIsModelPreloaded(false);
+    setPreloadProgress(null);
+
+    try {
+      const model = await getModelInstance();
+      await model.createSessionWithProgress((progress: number) => {
+        setPreloadProgress(Math.round(progress * 100));
+      });
+      setPreloadProgress(100);
+      markModelDownloaded(selectedModel);
+      setIsModelPreloaded(true);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message.toLowerCase() : String(error);
+      const isMemoryError =
+        errorMessage.includes('bad_alloc') ||
+        errorMessage.includes('out of memory');
+
+      if (isMemoryError) {
+        clearModelInstance();
+        setPreloadError('Not enough GPU memory for this model');
+      } else {
+        setPreloadError('Preload failed');
+      }
+    } finally {
+      setIsPreloading(false);
+    }
+  };
+
   const copyMessageToClipboard = (message: any) => {
     const textContent = message.parts
       .filter((part: any) => part.type === 'text')
@@ -116,7 +187,14 @@ const ChatBotDemo = () => {
       <div className="flex flex-col h-full overflow-hidden">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <Image alt="logo" width={350} height={120} src="huggingface.svg" />
+            <Image
+              alt="logo"
+              width={250}
+              height={150}
+              src="huggingface.svg"
+              loading="eager"
+              style={{ width: 'auto', height: 'auto' }}
+            />
             <p className="text-sm max-w-xl">
               In-browser, local chat application powered by {''}
               <a
@@ -426,6 +504,22 @@ const ChatBotDemo = () => {
             />
             <PromptInputToolbar>
               <PromptInputTools>
+                {messages.length > 0 && (
+                  <PromptInputButton
+                    onClick={handleNewConversation}
+                    disabled={
+                      status === 'submitted' ||
+                      status === 'streaming' ||
+                      (messages.length === 0 && !input.trim())
+                    }
+                    variant="outline"
+                    className="size-8 rounded-md p-0 text-muted-foreground hover:text-foreground"
+                    title="New conversation"
+                    aria-label="Start a new conversation"
+                  >
+                    <PlusIcon className="size-4" />
+                  </PromptInputButton>
+                )}
                 <PromptInputModelSelect
                   onValueChange={value => {
                     setSelectedModel(value);
@@ -446,6 +540,49 @@ const ChatBotDemo = () => {
                     ))}
                   </PromptInputModelSelectContent>
                 </PromptInputModelSelect>
+                {!isModelPreloaded && (
+                  <PromptInputButton
+                    onClick={handlePreloadModel}
+                    disabled={
+                      isPreloading ||
+                      status !== 'ready' ||
+                      preloadDisabledByModel
+                    }
+                    variant="outline"
+                    className="size-8 rounded-md p-0 text-muted-foreground hover:text-foreground"
+                    title={
+                      preloadDisabledByModel
+                        ? 'Preloading is disabled for this model'
+                        : isPreloading
+                          ? `Warming model (${preloadProgress ?? 0}%)`
+                          : isModelPreloaded
+                            ? 'Model preloaded'
+                            : 'Preload model'
+                    }
+                    aria-label={
+                      preloadDisabledByModel
+                        ? 'Preloading is disabled for this model'
+                        : isPreloading
+                          ? `Warming model (${preloadProgress ?? 0}%)`
+                          : isModelPreloaded
+                            ? 'Model preloaded'
+                            : 'Preload model'
+                    }
+                  >
+                    {isPreloading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : isModelPreloaded ? (
+                      <CheckIcon className="size-4 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
+                  </PromptInputButton>
+                )}
+                {preloadError && (
+                  <span className="text-xs text-destructive/90">
+                    Preload failed
+                  </span>
+                )}
               </PromptInputTools>
               <PromptInputSubmit
                 disabled={status === 'ready' && !input.trim()}

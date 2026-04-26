@@ -46,6 +46,7 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
     return createUIMessageStream<TransformersUIMessage>({
       execute: async ({ writer }) => {
         let downloadProgressId: string | undefined;
+        const selectedModel = useModelStore.getState().selectedModel;
         const availability = await model.availability();
 
         // Only track progress if model needs downloading
@@ -86,6 +87,9 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
               });
             },
           );
+          useModelStore.getState().markModelDownloaded(selectedModel);
+        } else {
+          useModelStore.getState().markModelDownloaded(selectedModel);
         }
 
         const result = streamText({
@@ -97,6 +101,7 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
           }),
           system: createDefaultSystemPrompt(toolsMetadata),
           tools: this.tools,
+          toolChoice: undefined,
           stopWhen: stepCountIs(5),
           messages: prompt,
           abortSignal,

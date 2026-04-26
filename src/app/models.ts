@@ -7,6 +7,7 @@ export interface ModelConfig extends Omit<WorkerLoadOptions, 'modelId'> {
   id: string;
   name: string;
   supportsWorker?: boolean;
+  allowPreload?: boolean;
 }
 
 export const TRANSFORMERS_MODELS: ModelConfig[] = [
@@ -65,6 +66,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: true,
+    allowPreload: false,
   },
 ];
 
