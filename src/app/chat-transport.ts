@@ -24,6 +24,11 @@ import { tools, toolsMetadata } from "./tools/tools";
 export class TransformersChatTransport implements ChatTransport<TransformersUIMessage> {
   private tools = tools;
 
+  private estimateTokensFromText(text: string): number {
+    const trimmed = text.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+  }
 
   private async getModel(): Promise<TransformersJSLanguageModel> {
     return useModelStore.getState().getModelInstance();
@@ -92,6 +97,9 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
           useModelStore.getState().markModelDownloaded(selectedModel);
         }
 
+        const generationStart = performance.now();
+        let generatedText = "";
+
         const result = streamText({
           model: wrapLanguageModel({
             model,
@@ -101,7 +109,6 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
           }),
           system: createDefaultSystemPrompt(toolsMetadata),
           tools: this.tools,
-          toolChoice: undefined,
           stopWhen: stepCountIs(5),
           messages: prompt,
           abortSignal,
@@ -114,6 +121,50 @@ export class TransformersChatTransport implements ChatTransport<TransformersUIMe
               });
               downloadProgressId = undefined;
             }
+
+            if (event.chunk.type === "text-delta") {
+              generatedText += event.chunk.text;
+            }
+          },
+          onFinish: (event: any) => {
+            const elapsedMs = Math.max(Math.round(performance.now() - generationStart), 1);
+            const usage = event?.usage;
+            const outputTokens =
+              typeof usage?.outputTokens === "number"
+                ? usage.outputTokens
+                : this.estimateTokensFromText(generatedText);
+            const inputTokens =
+              typeof usage?.inputTokens === "number" ? usage.inputTokens : undefined;
+            const totalTokens =
+              typeof usage?.totalTokens === "number"
+                ? usage.totalTokens
+                : inputTokens !== undefined
+                  ? inputTokens + outputTokens
+                  : undefined;
+
+            const statParts: string[] = [];
+            const tokPerSecond =
+              outputTokens > 0 ? (outputTokens / (elapsedMs / 1000)).toFixed(2) : "0.00";
+            statParts.push(`${tokPerSecond} tok/s`);
+            statParts.push(`${outputTokens.toLocaleString()} out`);
+            if (typeof inputTokens === "number") {
+              statParts.push(`${inputTokens.toLocaleString()} in`);
+            }
+            if (typeof totalTokens === "number") {
+              statParts.push(`${totalTokens.toLocaleString()} total`);
+            }
+            statParts.push(`${(elapsedMs / 1000).toFixed(2)}s`);
+            if (!usage?.outputTokens) {
+              statParts.push("tokens estimated");
+            }
+
+            writer.write({
+              type: "data-notification",
+              data: {
+                level: "info",
+                message: `Stats: ${statParts.join(" · ")}`,
+              },
+            });
           },
         });
 

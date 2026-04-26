@@ -187,13 +187,12 @@ const ChatBotDemo = () => {
       <div className="flex flex-col h-full overflow-hidden">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <Image
+            <img
               alt="logo"
               width={250}
               height={150}
-              src="huggingface.svg"
+              src="/huggingface.svg"
               loading="eager"
-              style={{ width: 'auto', height: 'auto' }}
             />
             <p className="text-sm max-w-xl">
               In-browser, local chat application powered by {''}
@@ -235,7 +234,7 @@ const ChatBotDemo = () => {
                 <div key={message.id}>
                   <Message from={message.role} key={message.id}>
                     <MessageContent>
-                      {message.parts.map((part, i) => {
+                      {(message.parts as Array<any>).map((part, i) => {
                         switch (part.type) {
                           case 'data-modelDownloadProgress':
                             // Only show if message is not empty (hiding completed/cleared progress)
@@ -265,7 +264,7 @@ const ChatBotDemo = () => {
                                     width={300}
                                     height={300}
                                     alt={part.filename || 'Uploaded image'}
-                                    className="object-contain max-w-sm rounded-lg border"
+                                    className="object-contain max-w-sm h-auto rounded-lg border"
                                   />
                                 </div>
                               );
@@ -289,6 +288,19 @@ const ChatBotDemo = () => {
                                 <ReasoningTrigger />
                                 <ReasoningContent>{part.text}</ReasoningContent>
                               </Reasoning>
+                            );
+                          case 'data-notification':
+                            if (typeof part.data?.message !== 'string')
+                              return null;
+                            if (!part.data.message.startsWith('Stats: '))
+                              return null;
+                            return (
+                              <div
+                                key={`${message.id}-${i}`}
+                                className="mt-2 text-xs text-muted-foreground"
+                              >
+                                {part.data.message.replace('Stats: ', '')}
+                              </div>
                             );
                           default:
                             // Handle tool parts
