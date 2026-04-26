@@ -7,6 +7,7 @@ export interface ModelConfig extends Omit<WorkerLoadOptions, 'modelId'> {
   id: string;
   name: string;
   supportsWorker?: boolean;
+  supportsTools?: boolean;
   allowPreload?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: true,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/Qwen3-1.7B-ONNX',
@@ -24,6 +26,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: true,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/granite-4.0-350m-ONNX-web',
@@ -31,6 +34,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'fp16',
     supportsWorker: false,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/granite-4.0-micro-ONNX-web',
@@ -38,6 +42,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: false,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/granite-4.0-1b-ONNX-web',
@@ -45,6 +50,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: false,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/LFM2-1.2B-Tool-ONNX',
@@ -52,6 +58,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'fp16',
     supportsWorker: false,
+    supportsTools: true,
   },
   {
     id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web',
@@ -59,6 +66,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: false,
+    supportsTools: false,
   },
   {
     id: 'onnx-community/gpt-oss-20b-ONNX',
@@ -66,6 +74,7 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     device: 'webgpu',
     dtype: 'q4f16',
     supportsWorker: true,
+    supportsTools: false,
     allowPreload: false,
   },
 ];

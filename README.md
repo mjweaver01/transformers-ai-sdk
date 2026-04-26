@@ -42,7 +42,7 @@ Components to check out for the implementation:
    ```
 
 3. **Open your browser**:
-   Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
+   Navigate to [http://localhost:8085](http://localhost:8085) to see the application.
 
 ## Deployment
 

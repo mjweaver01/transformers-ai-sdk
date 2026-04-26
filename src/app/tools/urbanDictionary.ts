@@ -10,7 +10,7 @@ const urbanDictionary = {
   id: 'urbanDictionary',
   name: 'Urban Dictionary',
   description:
-    'Useful for looking up slang definitions and internet culture terms',
+    'Look up slang definitions only (informal words, memes, abbreviations, and internet jargon)',
   inputSchema: z.object({
     term: z.string().describe('The term to look up'),
   }),
