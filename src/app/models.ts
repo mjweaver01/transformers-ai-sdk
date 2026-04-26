@@ -53,14 +53,6 @@ export const TRANSFORMERS_MODELS: ModelConfig[] = [
     supportsTools: false,
   },
   {
-    id: 'onnx-community/LFM2-1.2B-Tool-ONNX',
-    name: 'LFM2 1.2B-Tool',
-    device: 'webgpu',
-    dtype: 'fp16',
-    supportsWorker: false,
-    supportsTools: true,
-  },
-  {
     id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web',
     name: 'Phi-3.5 Mini Instruct',
     device: 'webgpu',
